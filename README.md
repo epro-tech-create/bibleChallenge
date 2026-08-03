@@ -69,6 +69,19 @@ To make a schema change locally, edit `prisma/schema.prisma`, create a named mig
 
 `.env` and `.env.local` are local secrets and must not be committed. `.env.example` contains only placeholders.
 
+## Production Environment
+
+`.env.production` is intentionally not included because a placeholder connection string would make a production server fail at runtime. For a local production build, copy `.env.production.example` to `.env.production`, replace its values only on a trusted machine, and keep it untracked.
+
+For hosted deployments, configure these same values in the provider's encrypted environment-variable settings instead of uploading an environment file. Set them for every deployment environment that requires database access:
+
+1. `DATABASE_URL`: Neon pooled URL for runtime queries.
+2. `DIRECT_URL`: Neon direct URL for Prisma migrations.
+3. `NEXTAUTH_URL`: exact public HTTPS URL for the deployment.
+4. `NEXTAUTH_SECRET`: one stable value generated with `openssl rand -base64 32`.
+
+The `vercel-build` script deploys pending migrations before creating the production build. To reproduce that process locally after setting real production values, run `NODE_ENV=production npm run vercel-build`. The seed command now loads `.env.production` when `NODE_ENV=production`; seed only an intentionally empty database because it replaces application records.
+
 ## Database API
 
 All routes return JSON. Successful collection responses use `{ "data": ... }`; errors use `{ "error": { "message": "..." } }`. The public routes intentionally omit contact information, user accounts, answer keys, and other private data.

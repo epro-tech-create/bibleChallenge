@@ -1,5 +1,12 @@
+import { config } from "dotenv";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
+
+config({
+  path: process.env.NODE_ENV === "production" ? ".env.production" : ".env.local",
+});
+config();
+
 const prisma = new PrismaClient();
 
 const questions = [
