@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DITSCF VerseQuest
 
-## Getting Started
+**Read. Compete. Grow.** VerseQuest is a full-stack, family-based Scripture competition platform for DITSCF Fellowship. Families register members, nominate challengers, compete through timed Bible quizzes, and follow live scores in the Hall of Champions.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Credentials authentication with bcrypt password hashes and role protection.
+- Administrator, Family Leader, and Challenger workflows.
+- PostgreSQL/Prisma data model for families, quests, rounds, questions, sessions, answers, scores, announcements, and audits.
+- Daniel chapters 1–12 demonstration quest with 3 rounds and 21 questions.
+- Server-validated timed answer submission, duplicate-answer protection, automatic objective marking, manual marking, and score adjustments.
+- Responsive public landing page, family directory, schedule, news, dashboards, live leaderboard, control center, and quiz waiting room.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Next.js App Router, TypeScript, PostgreSQL, Prisma, NextAuth credentials, Tailwind CSS, React Hook Form/Zod-ready server validation, bcryptjs, Lucide React, and Recharts.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+Prerequisites: Node.js 20+ and PostgreSQL 15+.
 
-To learn more about Next.js, take a look at the following resources:
+1. Create a PostgreSQL database named `versequest`.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` and a strong `NEXTAUTH_SECRET`.
+3. Install packages: `npm install`.
+4. Generate Prisma client: `npm run db:generate`.
+5. Create and apply the migration: `npm run db:migrate -- --name init`.
+6. Add demo data: `npm run db:seed`.
+7. Start development: `npm run dev`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For production use `npm run build` and `npm start` after configuring environment variables and running migrations.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Demo Accounts
 
-## Deploy on Vercel
+All demo accounts use password `VerseQuest2026!`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Role          | Email                         |
+| ------------- | ----------------------------- |
+| Administrator | `admin@versequest.test`       |
+| Family Leader | `leader1@versequest.test`     |
+| Challenger    | `challenger1@versequest.test` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Main Workflow
+
+1. An administrator creates fellowship families, a quest, rounds, and question bank entries.
+2. Family leaders add members and submit up to the quest's per-family challenger limit.
+3. The administrator opens a quiz session and selects each active question in the Live Challenge Control Center.
+4. Challengers submit one answer before the server timer expires.
+5. Objective answers receive marks automatically; written/oral answers go to manual marking.
+6. Family scores recalculate and the public Hall of Champions refreshes every five seconds.
+
+## Project Structure
+
+- `src/app` - App Router pages, route handler, and server actions
+- `src/components` - layout, dashboard, leaderboard, auth, and quiz components
+- `src/lib` - database, authentication, authorization, and scoring services
+- `prisma/schema.prisma` - PostgreSQL schema
+- `prisma/seed.ts` - demonstration data
+
+## Notes
+
+The first migration is intentionally generated locally from the schema because migration SQL must match the PostgreSQL version and environment used by the fellowship. Run the setup migration command above before seeding. The initial live leaderboard uses ISR polling rather than a websocket service.

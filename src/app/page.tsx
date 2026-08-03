@@ -1,65 +1,150 @@
+import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight, BookOpen, CalendarDays, Crown, Users } from "lucide-react";
+import { PublicNav } from "@/components/layout/public-nav";
+import { db } from "@/lib/db";
+import { Leaderboard } from "@/components/leaderboard/leaderboard";
+export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const [challenge, families] = await Promise.all([
+    db.challenge.findFirst({
+      where: { status: { in: ["ACTIVE", "REGISTRATION_OPEN"] } },
+      orderBy: { challengeDate: "asc" },
+    }),
+    db.challengeFamily.findMany({
+      take: 5,
+      orderBy: { totalScore: "desc" },
+      include: { family: true },
+    }),
+  ]);
+  const rows = families.map((f, i) => ({
+    position: i + 1,
+    score: f.totalScore,
+    family: f.family,
+  }));
+  const challengeStart = new Date();
+  challengeStart.setHours(11, 45, 0, 0);
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      <PublicNav
+        countdownTarget={challenge ? challengeStart.toISOString() : undefined}
+      />
+      <main>
+        <section className="relative overflow-hidden bg-[#104366] py-14 text-white sm:py-20 lg:py-24">
+          <Image
+            src="/bible-challenge-hero.jpg"
+            alt="DITSCF fellowship members"
+            fill
+            priority
+            sizes="100vw"
+            className="scale-x-[-1] object-cover object-[72%_center] opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#104366] via-[#104366]/90 to-[#104366]/25" />
+          <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(#e2a54d_1px,transparent_1px)] [background-size:24px_24px]" />
+          <div className="shell relative z-10 grid items-center gap-8 lg:gap-14 lg:grid-cols-[1.2fr_.8fr]">
+            <div className="max-w-3xl py-2 sm:py-5">
+              <p className="eyebrow text-amber-300">
+                DITSCF Fellowship presents
+              </p>
+              <h1 className="mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
+                Welcome to DITSCF BibleChallenge
+              </h1>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-violet-100 sm:text-lg sm:leading-8">
+                A joyful family-based Scripture competition by DITSCF
+                Fellowship. Study together, represent your family, answer
+                challenging questions and grow in the Word.
+              </p>
+              <p className="mt-5 font-bold text-white">Read. Compete. Grow.</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/about" className="btn btn-gold">
+                  Explore the Challenge <ArrowRight size={16} />
+                </Link>
+                <Link href="/families" className="btn border border-white/30">
+                  View Families
+                </Link>
+              </div>
+            </div>
+            <div className="rounded-3xl border border-white/15 bg-[#104366]/50 p-6 backdrop-blur-sm sm:p-8">
+              <Crown className="text-[#e2a54d]" size={38} />
+              <p className="mt-5 text-sm font-semibold text-white">
+                CURRENT CHALLENGE
+              </p>
+              <h2 className="mt-1 text-2xl font-bold text-white">
+                {challenge?.title ?? "Daniel: Courage & Kingdoms"}
+              </h2>
+              <p className="mt-5 text-white">
+                {challenge
+                  ? `${challenge.bibleBook} ${challenge.startChapter}–${challenge.endChapter}`
+                  : "Daniel Chapters 1–12"}
+              </p>
+              <Link
+                href="/schedule"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#e2a54d]"
+              >
+                Challenge schedule <ArrowRight size={15} />
+              </Link>
+            </div>
+          </div>
+        </section>
+        <section className="shell grid gap-5 py-10 sm:grid-cols-3 sm:py-14">
+          <Feature
+            icon={<Users />}
+            title="Grow as a family"
+            text="Learn Scripture together and represent your fellowship family."
+          />
+          <Feature
+            icon={<BookOpen />}
+            title="Test your knowledge"
+            text="Face thoughtful Bible challenges one challenge round at a time."
+          />
+          <Feature
+            icon={<CalendarDays />}
+            title="Celebrate every step"
+            text="Track progress, qualify onward, and crown champions."
+          />
+        </section>
+        <section className="shell grid gap-8 pb-16 lg:grid-cols-[1fr_.9fr]">
+          <div>
+            <p className="eyebrow">Your first quest</p>
+            <h2 className="mt-2 text-3xl font-black text-violet-950">
+              Daniel: Courage & Kingdoms
+            </h2>
+            <p className="mt-3 max-w-xl leading-7 text-slate-600">
+              Twelve chapters of faith, wisdom and courage. Gather your family,
+              sharpen your knowledge, and prepare for the Crown Round.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <Link href="/leaderboard" className="btn btn-primary">
+                Live scores
+              </Link>
+              <Link href="/schedule" className="btn btn-ghost">
+                Challenge schedule
+              </Link>
+            </div>
+          </div>
+          <Leaderboard rows={rows} />
+        </section>
       </main>
-    </div>
+    </>
+  );
+}
+function Feature({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <article className="card flex min-h-52 flex-col p-6 sm:p-7">
+      <div className="mb-5 inline-flex w-fit rounded-xl bg-violet-100 p-3 text-violet-800">
+        {icon}
+      </div>
+      <h2 className="font-bold text-violet-950">{title}</h2>
+      <p className="mt-3 text-sm leading-6 text-slate-600">{text}</p>
+    </article>
   );
 }

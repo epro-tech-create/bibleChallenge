@@ -1,0 +1,394 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FAMILY_LEADER
+  PARTICIPANT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum FamilyStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ChallengeStatus {
+  DRAFT
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum QualificationStatus {
+  PENDING
+  QUALIFIED
+  NOT_QUALIFIED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RoundStatus {
+  UPCOMING
+  READY
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  FILL_IN_THE_BLANK
+  SHORT_ANSWER
+  VERSE_COMPLETION
+  ORAL
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+  TIE_BREAKER
+}
+
+enum QuestionStatus {
+  DRAFT
+  READY
+  ARCHIVED
+}
+
+enum QuizStatus {
+  READY
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum MarkingStatus {
+  PENDING
+  AUTO_MARKED
+  MANUALLY_MARKED
+}
+
+enum AnnouncementAudience {
+  ALL
+  FAMILIES
+  PARTICIPANTS
+  LEADERS
+}
+
+model User {
+  id                String              @id @default(cuid())
+  fullName          String
+  email             String              @unique
+  phone             String?
+  passwordHash      String
+  role              Role                @default(PARTICIPANT)
+  status            UserStatus          @default(ACTIVE)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  ledFamily         Family?             @relation("FamilyLeader")
+  memberProfile     FamilyMember?
+  createdChallenges Challenge[]         @relation("ChallengeCreator")
+  createdQuestions  Question[]          @relation("QuestionCreator")
+  startedSessions   QuizSession[]       @relation("SessionStarter")
+  markedAnswers     ParticipantAnswer[] @relation("AnswerMarker")
+  scoreAdjustments  ScoreAdjustment[]   @relation("ScoreAdjuster")
+  announcements     Announcement[]      @relation("AnnouncementCreator")
+  auditLogs         AuditLog[]
+}
+
+model Family {
+  id                String                 @id @default(cuid())
+  name              String                 @unique
+  leaderId          String?                @unique
+  phone             String
+  email             String
+  location          String                 @default("Main Campus")
+  status            FamilyStatus           @default(ACTIVE)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  leader            User?                  @relation("FamilyLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  members           FamilyMember[]
+  challengeFamilies ChallengeFamily[]
+  participants      ChallengeParticipant[]
+  roundFamilies     RoundFamily[]
+  adjustments       ScoreAdjustment[]
+
+  @@index([status])
+}
+
+model FamilyMember {
+  id                      String                 @id @default(cuid())
+  familyId                String
+  userId                  String?                @unique
+  fullName                String
+  phone                   String?
+  gender                  String?
+  ageGroup                String?
+  status                  MemberStatus           @default(ACTIVE)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  family                  Family                 @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user                    User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  challengeParticipations ChallengeParticipant[]
+
+  @@index([familyId, status])
+}
+
+model Challenge {
+  id                    String                 @id @default(cuid())
+  title                 String
+  slug                  String                 @unique
+  description           String
+  bibleBook             String
+  startChapter          Int
+  endChapter            Int
+  registrationDeadline  DateTime
+  challengeDate         DateTime
+  participantsPerFamily Int
+  defaultQuestionTime   Int
+  defaultQuestionMarks  Float
+  qualificationRules    String?
+  tieBreakerRules       String?
+  status                ChallengeStatus        @default(DRAFT)
+  createdById           String
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  createdBy             User                   @relation("ChallengeCreator", fields: [createdById], references: [id])
+  challengeFamilies     ChallengeFamily[]
+  participants          ChallengeParticipant[]
+  rounds                Round[]
+  questions             Question[]
+  adjustments           ScoreAdjustment[]
+  announcements         Announcement[]
+
+  @@index([status, challengeDate])
+}
+
+model ChallengeFamily {
+  id                  String              @id @default(cuid())
+  challengeId         String
+  familyId            String
+  registrationStatus  RegistrationStatus  @default(PENDING)
+  qualificationStatus QualificationStatus @default(PENDING)
+  totalScore          Float               @default(0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  challenge           Challenge           @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  family              Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, familyId])
+  @@index([challengeId, totalScore])
+}
+
+model ChallengeParticipant {
+  id              String              @id @default(cuid())
+  challengeId     String
+  familyId        String
+  familyMemberId  String
+  participantCode String              @unique
+  approvalStatus  ApprovalStatus      @default(PENDING)
+  checkedIn       Boolean             @default(false)
+  checkedInAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  challenge       Challenge           @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  family          Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  familyMember    FamilyMember        @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  answers         ParticipantAnswer[]
+  adjustments     ScoreAdjustment[]
+
+  @@unique([challengeId, familyMemberId])
+  @@index([challengeId, familyId, approvalStatus])
+}
+
+model Round {
+  id                 String            @id @default(cuid())
+  challengeId        String
+  name               String
+  roundNumber        Int
+  description        String?
+  numberOfQuestions  Int
+  timePerQuestion    Int
+  qualificationLimit Int?
+  scheduledAt        DateTime
+  status             RoundStatus       @default(UPCOMING)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  challenge          Challenge         @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  questions          Question[]
+  roundFamilies      RoundFamily[]
+  sessions           QuizSession[]
+  adjustments        ScoreAdjustment[]
+
+  @@unique([challengeId, roundNumber])
+}
+
+model RoundFamily {
+  id         String   @id @default(cuid())
+  roundId    String
+  familyId   String
+  qualified  Boolean  @default(false)
+  roundScore Float    @default(0)
+  position   Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  round      Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  family     Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([roundId, familyId])
+}
+
+model Question {
+  id             String              @id @default(cuid())
+  challengeId    String
+  roundId        String?
+  bibleBook      String
+  chapter        Int
+  verseReference String?
+  questionText   String
+  questionType   QuestionType
+  difficulty     Difficulty          @default(MEDIUM)
+  correctAnswer  String
+  explanation    String?
+  marks          Float
+  timeLimit      Int
+  status         QuestionStatus      @default(DRAFT)
+  createdById    String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  challenge      Challenge           @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  round          Round?              @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  createdBy      User                @relation("QuestionCreator", fields: [createdById], references: [id])
+  options        QuestionOption[]
+  answers        ParticipantAnswer[]
+  quizSessions   QuizSession[]
+
+  @@index([challengeId, roundId, status])
+}
+
+model QuestionOption {
+  id                 String              @id @default(cuid())
+  questionId         String
+  label              String
+  optionText         String
+  isCorrect          Boolean             @default(false)
+  question           Question            @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  participantAnswers ParticipantAnswer[]
+
+  @@unique([questionId, label])
+}
+
+model QuizSession {
+  id                       String              @id @default(cuid())
+  roundId                  String
+  startedById              String
+  currentQuestionId        String?
+  currentQuestionStartedAt DateTime?
+  startedAt                DateTime?
+  pausedAt                 DateTime?
+  endedAt                  DateTime?
+  status                   QuizStatus          @default(READY)
+  round                    Round               @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  startedBy                User                @relation("SessionStarter", fields: [startedById], references: [id])
+  currentQuestion          Question?           @relation(fields: [currentQuestionId], references: [id], onDelete: SetNull)
+  answers                  ParticipantAnswer[]
+
+  @@index([roundId, status])
+}
+
+model ParticipantAnswer {
+  id               String               @id @default(cuid())
+  quizSessionId    String
+  questionId       String
+  participantId    String
+  answerText       String?
+  selectedOptionId String?
+  submittedAt      DateTime             @default(now())
+  isCorrect        Boolean?
+  marksAwarded     Float?
+  markingStatus    MarkingStatus        @default(PENDING)
+  markedById       String?
+  markedAt         DateTime?
+  quizSession      QuizSession          @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
+  question         Question             @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  participant      ChallengeParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  selectedOption   QuestionOption?      @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+  markedBy         User?                @relation("AnswerMarker", fields: [markedById], references: [id], onDelete: SetNull)
+
+  @@unique([quizSessionId, questionId, participantId])
+  @@index([participantId, markingStatus])
+}
+
+model ScoreAdjustment {
+  id            String                @id @default(cuid())
+  challengeId   String
+  roundId       String?
+  familyId      String
+  participantId String?
+  points        Float
+  reason        String
+  adjustedById  String
+  createdAt     DateTime              @default(now())
+  challenge     Challenge             @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  round         Round?                @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  family        Family                @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  participant   ChallengeParticipant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+  adjustedBy    User                  @relation("ScoreAdjuster", fields: [adjustedById], references: [id])
+}
+
+model Announcement {
+  id          String               @id @default(cuid())
+  challengeId String?
+  title       String
+  message     String
+  audience    AnnouncementAudience @default(ALL)
+  createdById String
+  createdAt   DateTime             @default(now())
+  challenge   Challenge?           @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  createdBy   User                 @relation("AnnouncementCreator", fields: [createdById], references: [id])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+}
