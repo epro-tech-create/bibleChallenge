@@ -299,6 +299,41 @@ export async function controlRound(formData: FormData) {
   revalidatePath("/admin/control");
   revalidatePath("/participant/quiz");
 }
+export async function startChallenge(formData: FormData) {
+  const session = await requireRole("ADMIN");
+  const { challengeId } = z
+    .object({ challengeId: z.string() })
+    .parse(Object.fromEntries(formData));
+  const challenge = await db.challenge.findUniqueOrThrow({
+    where: { id: challengeId },
+    select: { id: true, title: true, status: true },
+  });
+  if (["CANCELLED", "COMPLETED"].includes(challenge.status)) {
+    throw new Error("A cancelled or completed challenge cannot be started.");
+  }
+  if (challenge.status !== "ACTIVE") {
+    await db.$transaction([
+      db.challenge.update({
+        where: { id: challenge.id },
+        data: { status: "ACTIVE" },
+      }),
+      db.auditLog.create({
+        data: {
+          userId: session.user.id,
+          action: "START",
+          entityType: "Challenge",
+          entityId: challenge.id,
+          description: `Administrator started ${challenge.title}.`,
+        },
+      }),
+    ]);
+  }
+  revalidatePath("/");
+  revalidatePath("/challenges");
+  revalidatePath("/admin");
+  revalidatePath("/admin/control");
+  revalidatePath("/participant/quiz");
+}
 export async function submitAnswer(formData: FormData) {
   const session = await requireRole("PARTICIPANT");
   const input = z

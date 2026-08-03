@@ -1,6 +1,10 @@
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { controlRound, resetQuizSession } from "@/app/actions";
+import {
+  controlRound,
+  resetQuizSession,
+  startChallenge,
+} from "@/app/actions";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Countdown } from "@/components/quiz/countdown";
 export const dynamic = "force-dynamic";
@@ -46,6 +50,31 @@ export default async function Control() {
           <h2 className="mt-1 text-2xl font-black text-violet-950">
             {session.round.name}
           </h2>
+          <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="mr-auto">
+              <p className="text-sm font-bold text-violet-950">
+                Challenge status: {session.round.challenge.status.replaceAll("_", " ")}
+              </p>
+              <p className="text-xs text-slate-600">
+                Starting manually activates the challenge immediately, regardless of its scheduled time.
+              </p>
+            </div>
+            <form action={startChallenge}>
+              <input
+                type="hidden"
+                name="challengeId"
+                value={session.round.challengeId}
+              />
+              <button
+                className="btn btn-gold text-sm"
+                disabled={session.round.challenge.status === "ACTIVE"}
+              >
+                {session.round.challenge.status === "ACTIVE"
+                  ? "Challenge active"
+                  : "Start challenge now"}
+              </button>
+            </form>
+          </div>
           <div className="mt-7 rounded-2xl bg-violet-950 p-6 text-white">
             <p className="text-xs font-bold tracking-widest text-amber-300">
               CURRENT QUESTION

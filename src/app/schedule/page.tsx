@@ -15,25 +15,31 @@ export default async function Schedule() {
           Challenge schedule
         </h1>
         <div className="mt-8 max-w-3xl space-y-3">
-          {rounds.map((r) => (
-            <article
-              key={r.id}
-              className="card flex items-center justify-between p-5"
-            >
-              <div>
-                <p className="font-bold text-violet-950">{r.name}</p>
-                <p className="text-sm text-slate-500">
-                  {r.challenge.title} · {r.numberOfQuestions} questions
-                </p>
-              </div>
-              <div className="text-right text-sm">
-                <p className="font-bold">
-                  {r.scheduledAt.toLocaleDateString()}
-                </p>
-                <span className={`status status-${r.status}`}>{r.status}</span>
-              </div>
-            </article>
-          ))}
+          {rounds.length ? (
+            rounds.map((r) => (
+              <article
+                key={r.id}
+                className="card flex items-center justify-between p-5"
+              >
+                <div>
+                  <p className="font-bold text-violet-950">{r.name}</p>
+                  <p className="text-sm text-slate-500">
+                    {r.challenge.title} · {r.numberOfQuestions} questions
+                  </p>
+                </div>
+                <div className="text-right text-sm">
+                  <p className="font-bold">
+                    {r.scheduledAt.toLocaleDateString()}
+                  </p>
+                  <span className={`status status-${r.status}`}>{r.status}</span>
+                </div>
+              </article>
+            ))
+          ) : (
+            <p className="card p-8 text-center text-slate-600">
+              The schedule will be published once the next challenge is ready.
+            </p>
+          )}
         </div>
       </main>
     </>

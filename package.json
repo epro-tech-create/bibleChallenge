@@ -6,28 +6,28 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-
-    "vercel-build": "prisma generate && next build",
+    "vercel-build": "prisma migrate deploy && prisma generate && next build",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
-    "@prisma/client": "^6.19.2",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^6.19.3",
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.28.0",
     "next": "16.2.12",
     "next-auth": "^4.24.15",
-    "prisma": "^6.19.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.84.0",
@@ -43,16 +43,17 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.5",
     "typescript": "^5"
   },
   "allowScripts": {
-    "prisma@6.19.2": true,
-    "@prisma/client@6.19.2": true,
-    "@prisma/engines@6.19.2": true,
     "esbuild@0.28.1": true,
     "sharp@0.34.5": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true
   }
 }

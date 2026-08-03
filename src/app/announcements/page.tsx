@@ -15,15 +15,21 @@ export default async function Announcements() {
           Announcements
         </h1>
         <div className="mt-8 grid max-w-3xl gap-4">
-          {items.map((a) => (
-            <article key={a.id} className="card p-6">
-              <p className="font-bold text-violet-950">{a.title}</p>
-              <p className="mt-2 leading-7 text-slate-600">{a.message}</p>
-              <p className="mt-4 text-xs font-bold text-slate-400">
-                Posted by {a.createdBy.fullName}
-              </p>
-            </article>
-          ))}
+          {items.length ? (
+            items.map((a) => (
+              <article key={a.id} className="card p-6">
+                <p className="font-bold text-violet-950">{a.title}</p>
+                <p className="mt-2 leading-7 text-slate-600">{a.message}</p>
+                <p className="mt-4 text-xs font-bold text-slate-400">
+                  Posted by {a.createdBy.fullName}
+                </p>
+              </article>
+            ))
+          ) : (
+            <p className="card p-8 text-center text-slate-600">
+              There are no announcements yet. Check back soon for challenge news.
+            </p>
+          )}
         </div>
       </main>
     </>

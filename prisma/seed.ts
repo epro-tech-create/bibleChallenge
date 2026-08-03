@@ -128,7 +128,8 @@ async function main() {
     families.push({ family, members });
   }
   const challengeDate = new Date();
-  challengeDate.setHours(11, 45, 0, 0);
+  challengeDate.setDate(challengeDate.getDate() + 1);
+  challengeDate.setHours(19, 0, 0, 0);
   const challenge = await prisma.challenge.create({
     data: {
       title: "Daniel Bible Challenge 2026",

@@ -23,12 +23,10 @@ export default async function Home() {
     score: f.totalScore,
     family: f.family,
   }));
-  const challengeStart = new Date();
-  challengeStart.setHours(11, 45, 0, 0);
   return (
     <>
       <PublicNav
-        countdownTarget={challenge ? challengeStart.toISOString() : undefined}
+        countdownTarget={challenge?.challengeDate.toISOString()}
       />
       <main>
         <section className="relative overflow-hidden bg-[#104366] py-14 text-white sm:py-20 lg:py-24">
@@ -57,7 +55,7 @@ export default async function Home() {
               </p>
               <p className="mt-5 font-bold text-white">Read. Compete. Grow.</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/about" className="btn btn-gold">
+                <Link href="/challenges" className="btn btn-gold">
                   Explore the Challenge <ArrowRight size={16} />
                 </Link>
                 <Link href="/families" className="btn border border-white/30">
@@ -65,19 +63,52 @@ export default async function Home() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-3xl border border-white/15 bg-[#104366]/50 p-6 backdrop-blur-sm sm:p-8">
-              <Crown className="text-[#e2a54d]" size={38} />
+            <div className="rounded-3xl border border-white/15 bg-[#104366]/60 p-6 backdrop-blur-sm sm:p-8">
+              <div className="flex items-start justify-between gap-4">
+                <Crown className="text-[#e2a54d]" size={38} />
+                {challenge && (
+                  <span className="rounded-full border border-[#e2a54d]/50 bg-[#e2a54d]/10 px-3 py-1 text-xs font-black text-[#e2a54d]">
+                    {challenge.status.replaceAll("_", " ")}
+                  </span>
+                )}
+              </div>
               <p className="mt-5 text-sm font-semibold text-white">
                 CURRENT CHALLENGE
               </p>
               <h2 className="mt-1 text-2xl font-bold text-white">
                 {challenge?.title ?? "Daniel: Courage & Kingdoms"}
               </h2>
-              <p className="mt-5 text-white">
+              <p className="mt-4 text-white">
                 {challenge
                   ? `${challenge.bibleBook} ${challenge.startChapter}–${challenge.endChapter}`
                   : "Daniel Chapters 1–12"}
               </p>
+              <p className="mt-2 text-sm leading-6 text-blue-100">
+                {challenge?.description ??
+                  "Study together, represent your family, and grow in the Word."}
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-3 border-t border-white/15 pt-4 text-sm">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-200">
+                    Starts
+                  </p>
+                  <p className="mt-1 font-bold text-white">
+                    {challenge
+                      ? `${challenge.challengeDate.toLocaleDateString()} · 11:45`
+                      : "Today · 11:45"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-200">
+                    Family entry
+                  </p>
+                  <p className="mt-1 font-bold text-white">
+                    {challenge
+                      ? `${challenge.participantsPerFamily} challengers`
+                      : "2 challengers"}
+                  </p>
+                </div>
+              </div>
               <Link
                 href="/schedule"
                 className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#e2a54d]"

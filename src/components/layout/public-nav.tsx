@@ -16,6 +16,7 @@ export function PublicNav({ countdownTarget }: { countdownTarget?: string }) {
           <span>BibleChallenge</span>
         </Link>
         <div className="hidden items-center gap-5 text-sm font-semibold text-slate-600 md:flex">
+          <Link href="/challenges">Challenges</Link>
           <Link href="/families">Families</Link>
           <Link href="/schedule">Schedule</Link>
           <Link href="/announcements">News</Link>
