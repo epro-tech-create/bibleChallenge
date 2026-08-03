@@ -7,7 +7,7 @@
 - Credentials authentication with bcrypt password hashes and role protection.
 - Administrator, Family Leader, and Challenger workflows.
 - PostgreSQL/Prisma data model for families, quests, rounds, questions, sessions, answers, scores, announcements, and audits.
-- Daniel chapters 1–12 demonstration quest with 3 rounds and 21 questions.
+- Daniel chapters 1–12 demonstration challenge with 3 rounds and 21 questions.
 - Server-validated timed answer submission, duplicate-answer protection, automatic objective marking, manual marking, and score adjustments.
 - Responsive public landing page, family directory, schedule, news, dashboards, live leaderboard, control center, and quiz waiting room.
 
@@ -27,7 +27,20 @@ Prerequisites: Node.js 20+ and PostgreSQL 15+.
 6. Add demo data: `npm run db:seed`.
 7. Start development: `npm run dev`.
 
-For production use `npm run build` and `npm start` after configuring environment variables and running migrations.
+For production use `npm run db:deploy`, `npm run build`, and `npm start` after configuring environment variables.
+
+## Vercel Deployment
+
+1. Push this repository to GitHub and import it in Vercel.
+2. Provision a hosted PostgreSQL database (Vercel Postgres, Neon, Supabase, or Railway).
+3. In **Vercel → Project Settings → Environment Variables**, set these variables for Production, Preview, and Development:
+   - `DATABASE_URL` - the provider's pooled PostgreSQL connection URL. It must include `sslmode=require` when required by the provider.
+   - `NEXTAUTH_SECRET` - generate with `openssl rand -base64 32`.
+   - `NEXTAUTH_URL` - your production URL, for example `https://your-project.vercel.app`.
+4. Set the Vercel build command to `npm run vercel-build` (or let Vercel detect the script automatically). This applies pending migrations, generates the Prisma Client for Vercel's Linux runtime, and builds Next.js.
+5. Deploy. Seed data is optional and should be run once from a trusted terminal against the production database: `DATABASE_URL="..." npm run db:seed`.
+
+Do not use the local example database URL in Vercel. A missing or inaccessible `DATABASE_URL` causes Prisma migration and runtime failures.
 
 ## Demo Accounts
 
@@ -41,8 +54,8 @@ All demo accounts use password `VerseQuest2026!`.
 
 ## Main Workflow
 
-1. An administrator creates fellowship families, a quest, rounds, and question bank entries.
-2. Family leaders add members and submit up to the quest's per-family challenger limit.
+1. An administrator creates fellowship families, a challenge, rounds, and question bank entries.
+2. Family leaders add members and submit up to the challenge's per-family challenger limit.
 3. The administrator opens a quiz session and selects each active question in the Live Challenge Control Center.
 4. Challengers submit one answer before the server timer expires.
 5. Objective answers receive marks automatically; written/oral answers go to manual marking.

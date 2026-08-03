@@ -42,7 +42,7 @@ export function Leaderboard({
           ))
         ) : (
           <p className="p-8 text-center text-slate-500">
-            Scores will appear once the quest begins.
+            Scores will appear once the challenge begins.
           </p>
         )}
       </div>

@@ -106,7 +106,7 @@ export default async function Home() {
         </section>
         <section className="shell grid gap-8 pb-16 lg:grid-cols-[1fr_.9fr]">
           <div>
-            <p className="eyebrow">Your first quest</p>
+            <p className="eyebrow">Your first challenge</p>
             <h2 className="mt-2 text-3xl font-black text-violet-950">
               Daniel: Courage & Kingdoms
             </h2>

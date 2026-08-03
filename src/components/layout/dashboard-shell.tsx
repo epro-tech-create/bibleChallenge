@@ -17,7 +17,7 @@ const adminLinks = [
   { href: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 const participantLinks = [
-  { href: "/participant", label: "My quest", icon: LayoutDashboard },
+  { href: "/participant", label: "My challenge", icon: LayoutDashboard },
   { href: "/participant/quiz", label: "Waiting room", icon: ScrollText },
   { href: "/leaderboard", label: "Family standings", icon: Trophy },
 ];

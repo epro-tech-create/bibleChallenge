@@ -12,7 +12,7 @@ export default async function Schedule() {
       <main className="shell py-12">
         <p className="eyebrow">Mark your calendar</p>
         <h1 className="mt-2 text-4xl font-black text-violet-950">
-          Quest schedule
+          Challenge schedule
         </h1>
         <div className="mt-8 max-w-3xl space-y-3">
           {rounds.map((r) => (

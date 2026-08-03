@@ -1,4 +1,4 @@
-import { PrismaClient, Difficulty, QuestionType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
@@ -133,7 +133,7 @@ async function main() {
     data: {
       title: "Daniel Bible Challenge 2026",
       slug: "daniel-courage-kingdoms",
-      description: "A family Scripture quest through Daniel chapters 1–12.",
+      description: "A family Scripture challenge through Daniel chapters 1–12.",
       bibleBook: "Daniel",
       startChapter: 1,
       endChapter: 12,
@@ -214,15 +214,8 @@ async function main() {
         chapter: Number(chapter),
         verseReference: `Daniel ${chapter}`,
         questionText: String(questionText),
-        questionType: isChoice
-          ? QuestionType.MULTIPLE_CHOICE
-          : QuestionType.SHORT_ANSWER,
-        difficulty:
-          i > 18
-            ? Difficulty.HARD
-            : i % 4 === 0
-              ? Difficulty.EASY
-              : Difficulty.MEDIUM,
+        questionType: isChoice ? "MULTIPLE_CHOICE" : "SHORT_ANSWER",
+        difficulty: i > 18 ? "HARD" : i % 4 === 0 ? "EASY" : "MEDIUM",
         correctAnswer: String(correctAnswer),
         marks: 5,
         timeLimit: 45,
